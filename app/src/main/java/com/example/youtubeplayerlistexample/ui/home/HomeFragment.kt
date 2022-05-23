@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
         }
         val recyclerView = binding.recyclerHome
         val linearLayoutManager = LinearLayoutManager(context)
-        val listAdapter = ListAdapter()
+        val listAdapter = ListAdapter(this)
         recyclerView.apply {
             layoutManager = linearLayoutManager
             adapter = listAdapter

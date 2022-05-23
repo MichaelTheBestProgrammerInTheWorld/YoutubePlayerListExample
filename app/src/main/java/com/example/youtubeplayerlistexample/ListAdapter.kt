@@ -1,11 +1,23 @@
 package com.example.youtubeplayerlistexample
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.youtubeplayerlistexample.databinding.ListItemBinding
+import com.google.android.youtube.player.YouTubeInitializationResult
+import com.google.android.youtube.player.YouTubePlayer
+import com.google.android.youtube.player.YouTubePlayerSupportFragmentX
 
-class ListAdapter   : RecyclerView.Adapter<ListAdapter.ListHolder>() {
+class ListAdapter(fragmentT: Fragment)   : RecyclerView.Adapter<ListAdapter.ListHolder>() {
+
+
+    //youtube player fragment
+    var youtubeVideoArrayList = arrayListOf("CqhpNxI8qYw", "sasCrpgHDy8",
+    "iJeh3x09Ya8", "B5zRaD7B504", "9qWHzj8k-Uo")
 
 
     val listData = arrayListOf<String>("Egypt", "Sudan", "Tunisia",
@@ -13,27 +25,91 @@ class ListAdapter   : RecyclerView.Adapter<ListAdapter.ListHolder>() {
     "Iraq", "Syria", "Lebanon", "Saudi Arabia", "Yemen", "Oman", "Arab Emirates",
     "Qatar", "Bahrain", "Kuwait")
 
-    class ListHolder(itemView: ListItemBinding) : RecyclerView.ViewHolder(itemView.root){
+    lateinit var context: Context
+    val fragment: Fragment = fragmentT
+
+
+
+    class ListHolder(itemView: ListItemBinding, fragment: Fragment) : RecyclerView.ViewHolder(itemView.root){
 
         private val binding = itemView
+        private var youTubePlayer: YouTubePlayer? = null
+
+        //private lateinit var youTubePlayerFragment: YouTubePlayerSupportFragmentX
 
         fun setData(data: String){
 
             binding.textList.text = data
         }
+
+        val fragment: Fragment = fragment
+
+        fun initializeYoutubePlayer(videoId: String) {
+
+            val youTubePlayerFragment = YouTubePlayerSupportFragmentX.newInstance()
+            val transaction = fragment.childFragmentManager.beginTransaction()
+            transaction.replace(binding.youtubePlayerFragment.id, youTubePlayerFragment).commit()
+            if (youTubePlayerFragment == null) return
+            youTubePlayerFragment?.initialize(
+                "AIzaSyAISkugfeK9PYfn-RSraAp3lBI0y3V_OOY",
+                object : YouTubePlayer.OnInitializedListener {
+                    override fun onInitializationSuccess(
+                        provider: YouTubePlayer.Provider, player: YouTubePlayer,
+                        wasRestored: Boolean
+                    ) {
+                        if (!wasRestored) {
+                            youTubePlayer = player
+
+
+                            //set the player style default
+                            youTubePlayer?.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT)
+
+                            //cue the 1st video by default
+                            youTubePlayer?.cueVideo(videoId)
+                        }
+                    }
+
+                    override fun onInitializationFailure(
+                        arg0: YouTubePlayer.Provider,
+                        arg1: YouTubeInitializationResult
+                    ) {
+
+                        //print or show error if initialization failed
+                        Log.e("YouTube_Err", "Youtube Player View initialization failed")
+                    }
+                })
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListAdapter.ListHolder {
         val view = ListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ListHolder(view)
+        context = parent.context
+        //generateDummyVideoList()
+        return ListHolder(view, fragment)
     }
 
     override fun onBindViewHolder(holder: ListAdapter.ListHolder, position: Int) {
 
-        (holder as ListHolder).setData(listData.get(position))
+        //(holder as ListHolder).setData(listData.get(position))
+        holder.initializeYoutubePlayer(youtubeVideoArrayList!![position])
     }
 
     override fun getItemCount(): Int {
-        return listData.size
+        return youtubeVideoArrayList.size
     }
+
+
+    private fun generateDummyVideoList() {
+        youtubeVideoArrayList = ArrayList()
+
+        //get the video id array from strings.xml
+        val videoIDArray = context.resources.getStringArray(R.array.video_id_array)
+
+        //add all videos to array list
+        for (vidId in videoIDArray){
+            youtubeVideoArrayList?.add(vidId)
+        }
+    }
+
+
 }
