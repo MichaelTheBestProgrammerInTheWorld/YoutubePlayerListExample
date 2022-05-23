@@ -3,6 +3,7 @@ package com.example.youtubeplayerlistexample
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -46,9 +47,18 @@ class ListAdapter(fragmentT: Fragment)   : RecyclerView.Adapter<ListAdapter.List
 
         fun initializeYoutubePlayer(videoId: String) {
 
+            //create a unique container id for each item
+            val containerId = binding.youtubePlayerFragment.id
+            val oldFragment = fragment.childFragmentManager.findFragmentById(containerId)
+            if(oldFragment != null) {
+                fragment.childFragmentManager.beginTransaction().remove(oldFragment).commit();
+            }
+            val newContainerId = View.generateViewId()
+            binding.youtubePlayerFragment.id = newContainerId
+
             val youTubePlayerFragment = YouTubePlayerSupportFragmentX.newInstance()
             val transaction = fragment.childFragmentManager.beginTransaction()
-            transaction.replace(binding.youtubePlayerFragment.id, youTubePlayerFragment).commit()
+            transaction.replace(newContainerId, youTubePlayerFragment).commit()
             if (youTubePlayerFragment == null) return
             youTubePlayerFragment?.initialize(
                 "AIzaSyAISkugfeK9PYfn-RSraAp3lBI0y3V_OOY",
